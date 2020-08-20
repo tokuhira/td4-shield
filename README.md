@@ -4,7 +4,7 @@
 
 # Photo
 
-後ほど。
+![実際にはまだ製造していないrev.1の想像図](boards/td4-shield-rev.1/td4-shield.png "3d_view")
 
 # Features
 
