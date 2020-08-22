@@ -22,7 +22,7 @@ const byte rom[] = {
   B00000000,
 };
 
-const uint32_t int_pin = CLK;
+const uint32_t clock_pin = CLK;
 const uint32_t base_address = 0;
 const uint32_t default_address = 0;
 
@@ -39,7 +39,7 @@ void setup() {
   for (uint32_t i = out_0; i < out_count; ++i) {
     pinMode(out_pins[i], OUTPUT);
   }
-  attachInterrupt(digitalPinToInterrupt(int_pin), tick, RISING);
+  attachInterrupt(digitalPinToInterrupt(clock_pin), tick, RISING);
 }
 
 void loop() {
