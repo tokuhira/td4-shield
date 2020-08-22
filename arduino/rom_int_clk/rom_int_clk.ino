@@ -1,26 +1,8 @@
 /**
  * ROM emulator for TD4 using interrupt on CLK
- */ 
+ */
 #include "td4_iface.h"
-
-const byte rom[] = {
-  B01100000, // IN  B
-  B10010000, // OUT B
-  B11110000, // JMP 0000
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-};
+#include "td4_rom.h"
 
 const uint32_t clock_pin = CLK;
 const uint32_t base_address = 0;
