@@ -1,21 +1,27 @@
-# td4-shield
+# td4-shield-rev.0
 
-「CPUの創りかた」に則ったちょっと最近のプロジェクトです。
+「CPUの創りかた」を読んで実験するための野良基板の試作版です。
 
 # Photo
 
-![実際にはまだ製造していないrev.1の想像図](boards/td4-shield-rev.1/td4-shield.png "3d_view")
+![試作版rev.0の想像図](td4-shield.png "3d_view")
+
+# Resouces
+
+- [回路図](td4-shield-rev.0_sch.pdf)
+- [部品表](td4-shield-rev.0_parts.pdf)
+- [ブース](https://tokuhira.booth.pm/items/2313677)
 
 # Features
 
 書籍に記載の内容を少しアレンジしての製作例です。
 汎用ロジックICはSOICにしています。
 ROMと電源はArduinoで代用するため、UNO用Shieldとして使います。
-コードはArduino全般で動作することを目標としつつも、メインターゲットはSTM32です。
 
 # Requirement
 
-Arduino互換のボードが別途必要です。
+Arduino互換のボードと、そのマイコンで動作するROMエミュレータプログラムが別途必要です。
+色々と実験する場合はオシロスコープやロジックアナライザがあると便利だと思います。
 
 # Installation
 
