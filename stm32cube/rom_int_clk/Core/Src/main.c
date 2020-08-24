@@ -40,7 +40,6 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define STATE(x) ((x) ? GPIO_PIN_SET : GPIO_PIN_RESET)
 
 /* USER CODE END PM */
 
@@ -103,30 +102,26 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    unsigned char response;
-
     if (ticked)
     {
-      /* Read address order to ROM */
+      /* Read demand address for ROM */
       address = BASE_ADDRESS;
-      int rom_a0 = HAL_GPIO_ReadPin(A0_GPIO_Port, A0_Pin);
-      int rom_a1 = HAL_GPIO_ReadPin(A1_GPIO_Port, A1_Pin);
-      int rom_a2 = HAL_GPIO_ReadPin(A2_GPIO_Port, A2_Pin);
-      int rom_a3 = HAL_GPIO_ReadPin(A3_GPIO_Port, A3_Pin);
-      address += rom_a0 + (rom_a1 << 1) + (rom_a2 << 2) + (rom_a3 << 3);
+      address += (HAL_GPIO_ReadPin(A0_GPIO_Port, A0_Pin) << 0);
+      address += (HAL_GPIO_ReadPin(A1_GPIO_Port, A1_Pin) << 1);
+      address += (HAL_GPIO_ReadPin(A2_GPIO_Port, A2_Pin) << 2);
+      address += (HAL_GPIO_ReadPin(A3_GPIO_Port, A3_Pin) << 3);
       ticked = 0;
     }
 
-    /* Update response from ROM */
-    response = rom[address];
-    HAL_GPIO_WritePin(D0_GPIO_Port, D0_Pin, STATE(response & 1 << 0));
-    HAL_GPIO_WritePin(D1_GPIO_Port, D1_Pin, STATE(response & 1 << 1));
-    HAL_GPIO_WritePin(D2_GPIO_Port, D2_Pin, STATE(response & 1 << 2));
-    HAL_GPIO_WritePin(D3_GPIO_Port, D3_Pin, STATE(response & 1 << 3));
-    HAL_GPIO_WritePin(D4_GPIO_Port, D4_Pin, STATE(response & 1 << 4));
-    HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, STATE(response & 1 << 5));
-    HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, STATE(response & 1 << 6));
-    HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, STATE(response & 1 << 7));
+    /* Update bits of ROM */
+    HAL_GPIO_WritePin(D0_GPIO_Port, D0_Pin, rom[address] & 1 << 0);
+    HAL_GPIO_WritePin(D1_GPIO_Port, D1_Pin, rom[address] & 1 << 1);
+    HAL_GPIO_WritePin(D2_GPIO_Port, D2_Pin, rom[address] & 1 << 2);
+    HAL_GPIO_WritePin(D3_GPIO_Port, D3_Pin, rom[address] & 1 << 3);
+    HAL_GPIO_WritePin(D4_GPIO_Port, D4_Pin, rom[address] & 1 << 4);
+    HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, rom[address] & 1 << 5);
+    HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, rom[address] & 1 << 6);
+    HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, rom[address] & 1 << 7);
 
     /* USER CODE END WHILE */
 
