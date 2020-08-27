@@ -1142,21 +1142,21 @@ Wire Wire Line
 	1050 3850 1350 3850
 Wire Wire Line
 	1050 1800 1350 1800
-Text Label 1050 2100 0    50   ~ 0
-~RST
 Text Label 1050 2300 0    50   ~ 0
-CLK
-Text Label 1050 4150 0    50   ~ 0
 ~RST
+Text Label 1050 2100 0    50   ~ 0
+CLK
 Text Label 1050 4350 0    50   ~ 0
-CLK
-Text Label 1050 6200 0    50   ~ 0
 ~RST
+Text Label 1050 4150 0    50   ~ 0
+CLK
 Text Label 1050 6400 0    50   ~ 0
-CLK
-Text Label 1050 8250 0    50   ~ 0
 ~RST
+Text Label 1050 6200 0    50   ~ 0
+CLK
 Text Label 1050 8450 0    50   ~ 0
+~RST
+Text Label 1050 8250 0    50   ~ 0
 CLK
 Wire Wire Line
 	1350 8250 1050 8250
