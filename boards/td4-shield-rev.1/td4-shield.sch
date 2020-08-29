@@ -5,7 +5,7 @@ $Descr A3 16535 11693
 encoding utf-8
 Sheet 1 1
 Title "td4-shield"
-Date "2020-08-22"
+Date "2020-08-28"
 Rev "1"
 Comp "@tokuhira"
 Comment1 ""
