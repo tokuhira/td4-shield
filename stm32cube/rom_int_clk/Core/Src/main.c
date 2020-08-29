@@ -35,7 +35,6 @@
 /* USER CODE BEGIN PD */
 #define BASE_ADDRESS 0
 #define DEFAULT_ADDRESS 0
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
