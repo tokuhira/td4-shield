@@ -22,19 +22,28 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <string.h>
 #include "td4_rom.h"
+#include "PCA9624.h"
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef uint8_t seg7[7];
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define BASE_ADDRESS 0
-#define DEFAULT_ADDRESS 0
+#define ROM_BASE_ADDRESS    0
+#define ROM_DEFAULT_ADDRESS 0
+
+#define I2C_RETRIES         2
+#define I2C_TIMEOUT         2
+
+#define LED_PWM_FULL        0xff // PWM = 99.6%
+#define LED_PWM_OFF         0    // PWM = 0%
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,6 +58,26 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 volatile int ticked = 0;
+volatile int led_ok = 0;
+uint8_t cmd[32];
+seg7 hex2seg7[] = { // 0xff は PWM で 99.6% 出力
+  { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 }, // 0
+  { 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 }, // 1
+  { 0xff, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff }, // 2
+  { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff }, // 3
+  { 0x00, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff }, // 4
+  { 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0xff }, // 5
+  { 0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff }, // 6
+  { 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 }, // 7
+  { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, // 8
+  { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff }, // 9
+  { 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff }, // a
+  { 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff }, // b
+  { 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0xff }, // c
+  { 0x00, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff }, // d
+  { 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0xff }, // e
+  { 0xff, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff }, // f
+};
 
 /* USER CODE END PV */
 
@@ -73,7 +102,7 @@ static void MX_I2C1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  static int address = DEFAULT_ADDRESS;
+  HAL_StatusTypeDef ret;
 
   /* USER CODE END 1 */
 
@@ -99,23 +128,56 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
+  /* PCA9624 */
+  ret = HAL_I2C_IsDeviceReady(&hi2c1, PCA9624_ADDR, I2C_RETRIES, I2C_TIMEOUT);
+  if (ret == HAL_OK) // PCA9624 から ACK を受信
+  {
+    cmd[0] = MODE1; // モードレジスタ
+    cmd[1] = 0x0;   // SLEEP = 0 で低消費電力モードを解除して通常動作へ
+    ret = HAL_I2C_Master_Transmit(&hi2c1, PCA9624_ADDR, cmd, 2, HAL_MAX_DELAY);
+    if (ret == HAL_OK)
+    {
+      cmd[0] = LEDOUT0 + 0x80; // LEDOUT0 オートインクリメント
+      cmd[1] = 0xaa;           // LED3,2,1,0 各々の2ビットに 0b10 で PWM点灯を指定
+      cmd[2] = 0xaa;           // LED7,6,5,4 各々の2ビットに 0b10 で PWM点灯を指定
+      ret = HAL_I2C_Master_Transmit(&hi2c1, PCA9624_ADDR, cmd, 3, HAL_MAX_DELAY);
+      if (ret == HAL_OK)
+      {
+        led_ok = 1; // PCA9624 の初期化完了
+      }
+    }
+  }
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    static int address = ROM_DEFAULT_ADDRESS;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
     if (ticked)
     {
       /* Read demand address for ROM */
-      address = BASE_ADDRESS;
+      address = ROM_BASE_ADDRESS;
       address += (HAL_GPIO_ReadPin(A0_GPIO_Port, A0_Pin) << 0);
       address += (HAL_GPIO_ReadPin(A1_GPIO_Port, A1_Pin) << 1);
       address += (HAL_GPIO_ReadPin(A2_GPIO_Port, A2_Pin) << 2);
       address += (HAL_GPIO_ReadPin(A3_GPIO_Port, A3_Pin) << 3);
+      if (led_ok) // PCA9624
+      {
+        cmd[0] = PWM0 + 0x80;                  // PWM0 オートインクリメント
+        memcpy(&cmd[1], hex2seg7[address], 7); // 7 セグメントの PWM 値を直接設定
+        cmd[8] = LED_PWM_FULL;                 // DP は一旦点灯
+        ret = HAL_I2C_Master_Transmit(&hi2c1, PCA9624_ADDR, cmd, 9, HAL_MAX_DELAY);
+        if (ret != HAL_OK)
+        {
+          led_ok = 0; // PCA9624 でエラー発生
+          // TODO: I2C のリカバリ処理をここで
+        }
+      }
       ticked = 0;
     }
 
@@ -128,6 +190,18 @@ int main(void)
     HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, rom[address] & 1 << 5);
     HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, rom[address] & 1 << 6);
     HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, rom[address] & 1 << 7);
+    if (led_ok) // PCA9624
+    {
+      HAL_Delay(50);        // ちょっとだけ待ってから
+      cmd[0] = PWM7;        // DPを
+      cmd[1] = LED_PWM_OFF; // 消灯
+      ret = HAL_I2C_Master_Transmit(&hi2c1, PCA9624_ADDR, cmd, 2, HAL_MAX_DELAY);
+      if (ret != HAL_OK)
+      {
+        led_ok = 0; // PCA9624 でエラー発生
+        // TODO: I2C のリカバリ処理をここで
+      }
+    }
   }
   /* USER CODE END 3 */
 }
