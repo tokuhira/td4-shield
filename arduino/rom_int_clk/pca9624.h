@@ -1,14 +1,14 @@
 /*
- * PCA9624.h
+ * pca9624.h
  *
  *  Created on: Feb 5, 2021
  *      Origin: https://os.mbed.com/teams/CQ_I2C_book/code/PCA9624/
  */
 
-#ifndef INC_PCA9624_H_
-#define INC_PCA9624_H_
+#ifndef __pca9624_h
+#define __pca9624_h
 
-#define PCA9624_ADDR (0x40 << 1)
+#define PCA9624_ADDR 0x40
 
 #define MODE1            0x00
 #define MODE2            0x01
@@ -29,4 +29,4 @@
 #define SUBADR3          0x10
 #define ALLCALLADR       0x11
 
-#endif /* INC_PCA9624_H_ */
+#endif /* __pca9624_h */
